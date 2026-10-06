@@ -118,7 +118,10 @@ async function run() {
     fs.writeFileSync(path.join(root, "test-results/" + name), data.image, "base64");
   }
   try {
+    const fixtureHandle = await driver.getWindowHandle();
     await driver.installAddon(archive, true);
+    await driver.wait(async () => (await driver.getAllWindowHandles()).length === 2, 10000);
+    await driver.switchTo().window(fixtureHandle);
     await driver.setContext("chrome");
     await driver.executeScript('window.CustomizableUI.addWidgetToArea("video-lens_local-browser-action", "nav-bar")');
     await open("/empty");
