@@ -1,6 +1,6 @@
 {
   "name": "senzdev-visave",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "private": true,
   "description": "Firefox video saver with a bundled Windows download companion",
   "scripts": {

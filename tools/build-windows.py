@@ -89,6 +89,7 @@ media['binaries'] = {name: sha(bins / name) for name in ('ffmpeg.exe', 'ffprobe.
 media['distribution'] = 'Downloaded directly from its publisher during setup; binaries are excluded from the visave release ZIP.'
 (APP / 'FFMPEG-DOWNLOAD.json').write_text(json.dumps(media, indent=2), encoding='utf-8')
 shutil.copy2(ROOT / 'native/host.py', APP / 'host.py')
+shutil.copy2(ROOT / 'native/downloader_worker.py', APP / 'downloader_worker.py')
 shutil.copy2(ROOT / 'setup/selfcheck.py', APP / 'selfcheck.py')
 for name in ('Setup.cmd', 'Install.ps1', 'MediaTools.ps1', 'Uninstall.cmd', 'Uninstall.ps1'):
     shutil.copy2(ROOT / 'setup' / name, BUNDLE / name)

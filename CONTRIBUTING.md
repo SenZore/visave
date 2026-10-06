@@ -16,6 +16,7 @@ Use Node.js 22 and Python 3.13. Install Node dependencies and run the checks fro
 npm ci
 npm test
 npm run lint
+python -m pip install --require-hashes -r setup/windows-requirements.txt
 python -m unittest discover -s tests/native
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/bootstrap-check.ps1
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/media-tools-check.ps1
@@ -24,11 +25,12 @@ npm run build
 
 The Windows bundle build downloads upstream runtimes and Python dependencies. It requires Windows PowerShell and network access. The installed companion downloads the pinned FFmpeg archive from its publisher and verifies its SHA-256 hash during setup; that binary is not part of the GitHub release bundle.
 
-The 0.3.2 extension flow downloads the versioned `visave-setup-0.3.2.exe` from GitHub Releases. Users must open the unsigned EXE and select **Install**; Firefox cannot install native Windows programs for an extension. Setup installs per user without administrator access, downloads and verifies its required components, and needs an internet connection. Test the flow from the extension Settings page as well as by running the underlying setup checks. Do not describe it as silent, one-click, AMO-approved, or permanently installable in Firefox while the extension remains unsigned.
+The 0.3.3 extension flow downloads the versioned `visave-setup-0.3.3.exe` from GitHub Releases. Users must open the unsigned EXE and select **Install**; Firefox cannot install native Windows programs for an extension. Setup installs per user without administrator access, downloads and verifies its required components, and needs an internet connection. Test the flow from the extension Settings page as well as by running the underlying setup checks. Do not describe it as silent, one-click, AMO-approved, or permanently installable in Firefox while the extension remains unsigned.
 
 ```powershell
 python tools/import-sites.py
 npm run build
+python tools/build-bootstrap.py
 python tools/build-windows.py
 python tools/check-bundle.py
 python tools/package.py

@@ -31,7 +31,7 @@ function harness(initialStored = {}, nativeCapabilities = { saveBeforeSupported:
     postMessage(message) {
       calls.native.push(message);
       setImmediate(() => {
-        if (message.action === "probe") nativeMessages.emit({ id: message.id, ok: true, result: { ytDlp: true, ejs: true, ffmpeg: true, ffprobe: true, jsRuntime: true, ...nativeCapabilities } });
+        if (message.action === "probe") nativeMessages.emit({ id: message.id, ok: true, result: { ytDlp: true, ejs: true, ffmpeg: true, ffprobe: true, jsRuntime: true, securityLimitsSupported: true, ...nativeCapabilities } });
         else if (message.action === "download") nativeMessages.emit({ id: message.id, ok: true, result: { jobId: "native-job-1" } });
         else if (message.action === "chooseFolder") nativeMessages.emit({ id: message.id, ok: true, result: { folder: "D:/Videos/Saved" } });
         else if (message.action === "saveFile") nativeMessages.emit({ id: message.id, ok: true, result: { filename: message.saveFolder + "/" + message.filename.split(/[\\/]/).at(-1) } });
@@ -47,7 +47,7 @@ function harness(initialStored = {}, nativeCapabilities = { saveBeforeSupported:
       onMessage: runtimeMessages,
       getURL: (value = "") => `moz-extension://unit/${value}`,
       getPlatformInfo: async () => ({ os: "win", arch: "x86-64" }),
-      getManifest: () => ({ version: "0.3.2" }),
+      getManifest: () => ({ version: "0.3.3" }),
       connectNative(name) {
         assert.equal(name, "com.videolens.downloader");
         calls.nativeConnections += 1;
@@ -91,7 +91,7 @@ function harness(initialStored = {}, nativeCapabilities = { saveBeforeSupported:
     webNavigation: { onCommitted: committed }
   };
 
-  const context = vm.createContext({ browser, console, URL, crypto: webcrypto, setTimeout, clearTimeout, Promise, Map, Set, Date, Math, structuredClone });
+  const context = vm.createContext({ browser, console, URL, TextEncoder, crypto: webcrypto, setTimeout, clearTimeout, Promise, Map, Set, Date, Math, structuredClone });
   for (const file of ["shared.js", "background.js"]) {
     const source = fs.readFileSync(path.join(__dirname, "..", "extension", "src", file), "utf8");
     vm.runInContext(source, context, { filename: file });
@@ -138,7 +138,7 @@ test("installer uses the fixed release URL and rejects content pages and unsuppo
   assert.equal(h.calls.downloads.length, 0);
   const installed = await h.message({ type: "INSTALL_DEPENDENCIES", url: "https://example.test/untrusted.exe" });
   assert.equal(installed.ok, true);
-  assert.equal(h.calls.downloads[0].url, "https://github.com/SenZore/visave/releases/download/v0.3.2/visave-setup-0.3.2.exe");
+  assert.equal(h.calls.downloads[0].url, "https://github.com/SenZore/visave/releases/download/v0.3.3/visave-setup-0.3.3.exe");
   assert.equal(h.calls.downloads[0].saveAs, false);
   h.browser.runtime.getPlatformInfo = async () => ({ os: "linux", arch: "x86-64" });
   assert.equal((await h.message({ type: "INSTALL_DEPENDENCIES" })).ok, false);
@@ -146,7 +146,7 @@ test("installer uses the fixed release URL and rejects content pages and unsuppo
 });
 
 test("each required component blocks browser and converted downloads when missing", async () => {
-  for (const name of ["ytDlp", "ejs", "ffmpeg", "ffprobe", "jsRuntime", "saveFolderSupported"]) {
+  for (const name of ["ytDlp", "ejs", "ffmpeg", "ffprobe", "jsRuntime", "saveFolderSupported", "securityLimitsSupported"]) {
     const h = harness({}, { saveFolderSupported: true, [name]: false });
     await h.snapshot([video("main")]);
     const { result } = await h.message({ type: "GET_STATE", tabId: 7 });
@@ -156,6 +156,16 @@ test("each required component blocks browser and converted downloads when missin
     assert.equal(h.calls.downloads.length, 0);
     assert.equal(h.calls.native.filter(message => message.action === "download").length, 0);
   }
+});
+
+test("oversized serialized native requests are rejected before transmission", async () => {
+  const h = harness({ downloadFolder: "D:/" + "a".repeat(65536) });
+  await h.snapshot([video("main")]);
+  const { result } = await h.message({ type: "GET_STATE", tabId: 7 });
+  const response = await h.message({ type: "HELPER_DOWNLOAD", tabId: 7, videoUid: result.videos[0].uid, output: "mp3", quality: "best", useCookies: false });
+  assert.equal(response.ok, false);
+  assert.match(response.error, /request is too large/);
+  assert.equal(h.calls.native.filter(message => message.action === "download").length, 0);
 });
 
 test("installation checks reconnect idle companions and preserve active downloads", async () => {

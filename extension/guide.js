@@ -16,7 +16,7 @@ async function checkInstallation() {
     const info = reply.result;
     const missing = VideoLens.installationMissing(info);
     ready = missing.length === 0;
-    components.replaceChildren(...[["yt-dlp", info.ytDlp], ["FFmpeg", info.ffmpeg], ["FFprobe", info.ffprobe], ["Node.js", info.jsRuntime], ["YouTube challenge support", info.ejs], ["Saved folders", info.saveFolderSupported]].map(([name, found]) => {
+    components.replaceChildren(...[["yt-dlp", info.ytDlp], ["FFmpeg", info.ffmpeg], ["FFprobe", info.ffprobe], ["Node.js", info.jsRuntime], ["YouTube challenge support", info.ejs], ["Saved folders", info.saveFolderSupported], ["Current download protections", info.securityLimitsSupported]].map(([name, found]) => {
       const item = document.createElement("li");
       item.textContent = `${name}: ${found ? "detected" : "missing"}`;
       return item;

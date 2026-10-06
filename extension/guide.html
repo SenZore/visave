@@ -5,12 +5,12 @@
 <h1>senzdev | visave</h1><p>Install the download components once. Visave checks them and enables downloads when they are ready.</p>
 <h2>1. Install on Windows</h2>
 <button id="install-dependencies" type="button">Install dependencies</button><p id="setup-download-status" role="status" aria-live="polite">For x64 Windows 10 and 11. Internet access is required.</p>
-<ol><li>Click Install dependencies. Open <strong>visave-setup-0.3.2.exe</strong> from Firefox Downloads when it finishes.</li>
+<ol><li>Click Install dependencies. Open <strong>visave-setup-0.3.3.exe</strong> from Firefox Downloads when it finishes.</li>
 <li>In the setup window, click <strong>Install</strong>. It installs private Python, yt-dlp, Node.js and video tools for your Windows user. You do not need separate dependency installations, terminal commands or administrator access.</li>
 <li>Wait for <strong>Installation complete</strong>. Return here: the check runs automatically while this page is open. Firefox cannot run a native installer for you. Windows may show its normal warning because this preview installer is unsigned.</li></ol>
-<p>Prefer the readable scripts? Download the <a href="https://github.com/senzore/visave/releases/tag/v0.3.2" target="_blank" rel="noopener">ZIP bundle</a>, extract it, and run Setup.cmd. The installer source is public under setup/Bootstrap.cs.</p>
-<p>Alternatively, open PowerShell and run this command. It downloads and runs the published installer, verifies the Windows bundle against its release checksum, then opens the Firefox setup guide. <a href="https://github.com/senzore/visave/blob/v0.3.2/install.ps1" target="_blank" rel="noopener">Read the installer first</a>.</p>
-<p><code>irm https://raw.githubusercontent.com/senzore/visave/v0.3.2/install.ps1 | iex</code></p>
+<p>Prefer the readable scripts? Download the <a href="https://github.com/senzore/visave/releases/tag/v0.3.3" target="_blank" rel="noopener">ZIP bundle</a>, extract it, and run Setup.cmd. The installer source is public under setup/Bootstrap.cs.</p>
+<p>Alternatively, open PowerShell and run this command. It downloads and runs the published installer, verifies the Windows bundle against its release checksum, then opens the Firefox setup guide. <a href="https://github.com/senzore/visave/blob/v0.3.3/install.ps1" target="_blank" rel="noopener">Read the installer first</a>.</p>
+<p><code>irm https://raw.githubusercontent.com/senzore/visave/v0.3.3/install.ps1 | iex</code></p>
 <h2>2. Add visave to Firefox</h2>
 <p>This release is an unsigned development build. Open <code>about:debugging#/runtime/this-firefox</code>, click Load Temporary Add-on, and select the visave extension ZIP inside the setup bundle. Temporary installation lasts until Firefox closes; repeat this step after restart. Remove an older temporary Video Lens installation first.</p>
 <p>A permanent, install-and-use release requires Mozilla signing. There is no signed Firefox Add-ons listing yet. <a href="https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/" target="_blank" rel="noopener">About signing</a>.</p>

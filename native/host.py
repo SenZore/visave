@@ -21,7 +21,7 @@ from typing import Any, BinaryIO, Callable
 from urllib.parse import urlsplit
 
 
-HELPER_VERSION = "1.5.0"
+HELPER_VERSION = "1.6.0"
 MAX_MESSAGE_BYTES = 1_048_576
 MAX_URL_LENGTH = 8_192
 MAX_ERROR_LENGTH = 1_200
@@ -309,6 +309,7 @@ def probe_result() -> dict[str, Any]:
         "saveBeforeSupported": os.name == "nt",
         "saveFolderSupported": os.name == "nt",
         "filenameSupported": True,
+        "securityLimitsSupported": Path(__file__).with_name("downloader_worker.py").is_file(),
     }
 
 
@@ -338,8 +339,7 @@ def build_yt_dlp_args(
 ) -> list[str]:
     args = [
         python_executable or sys.executable,
-        "-m",
-        "yt_dlp",
+        str(Path(__file__).with_name("downloader_worker.py")),
         "--ignore-config",
         "--no-playlist",
         "--match-filter",
@@ -715,7 +715,7 @@ class DownloadJob:
         self._event(event, **fields)
 
     def _read_stderr(self, stream: Any, lines: collections.deque[str]) -> None:
-        for line in iter(stream.readline, ""):
+        for line in iter(lambda: stream.readline(8192), ""):
             lines.append(line)
         stream.close()
 
@@ -770,7 +770,9 @@ class DownloadJob:
                 daemon=True,
             )
             stderr_thread.start()
-            for raw_line in iter(process.stdout.readline, ""):
+            for raw_line in iter(lambda: process.stdout.readline(65536), ""):
+                if len(raw_line) == 65536 and not raw_line.endswith("\n"):
+                    raise ProtocolError("The downloader returned a response that is too large.")
                 line = raw_line.rstrip("\r\n")
                 if line.startswith(PROGRESS_PREFIX):
                     self._progress(line)
@@ -899,7 +901,7 @@ class NativeHost:
                     message = read_message(self.reader)
                 except ProtocolError as exc:
                     self.writer.send(self._error_reply(None, exc))
-                    continue
+                    break
                 if message is None:
                     break
                 try:

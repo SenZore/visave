@@ -2,6 +2,12 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const lens = require("../extension/src/shared.js");
 
+test("page URLs are bounded before and after URL encoding", () => {
+  assert.equal(lens.httpUrl("https://example.test/" + "a".repeat(8192)), null);
+  assert.equal(lens.httpUrl("https://example.test/" + "é".repeat(2000)), null);
+  assert.equal(lens.httpUrl("https://example.test/video.mp4"), "https://example.test/video.mp4");
+});
+
 test("sources classify manifests and fragments before download candidates", () => {
   assert.equal(lens.sourceKind("blob:https://example.org/123"), "blob");
   assert.equal(lens.sourceKind("https://example.org/master.m3u8"), "hls");

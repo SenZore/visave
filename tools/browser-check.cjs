@@ -150,7 +150,7 @@ async function run() {
             disconnect() { disconnects.forEach(listener => listener()); },
             postMessage(message) {
               const installed = background.__checkSetupReady;
-              const result = { ytDlp: true, ejs: true, ffmpeg: true, ffprobe: true, jsRuntime: true, saveFolderSupported: true, filenameSupported: true };
+              const result = { ytDlp: true, ejs: true, ffmpeg: true, ffprobe: true, jsRuntime: true, saveFolderSupported: true, filenameSupported: true, securityLimitsSupported: true };
               setTimeout(() => listeners.forEach(listener => listener({ id: message.id, ok: installed && message.action === 'probe', result, error: 'Helper intentionally unavailable in this isolated test' })), 20);
             }
           };
@@ -292,7 +292,7 @@ async function run() {
     await driver.findElement(By.id("install-dependencies")).click();
     const installers = await driver.executeAsyncScript("const done=arguments[arguments.length-1];browser.runtime.getBackgroundPage().then(bg=>done(bg.__checkInstallers))");
     assert.equal(installers.length, 1);
-    assert.equal(installers[0].url, 'https://github.com/SenZore/visave/releases/download/v0.3.2/visave-setup-0.3.2.exe');
+    assert.equal(installers[0].url, 'https://github.com/SenZore/visave/releases/download/v0.3.3/visave-setup-0.3.3.exe');
     assert.equal(installers[0].saveAs, false);
     await driver.executeAsyncScript("const done=arguments[arguments.length-1];browser.runtime.getBackgroundPage().then(bg=>{bg.__checkSetupReady=true;done(true)})");
     await driver.wait(async () => (await driver.findElement(By.id("helper-status")).getText()).includes("Installation ready"), 12000);
@@ -454,7 +454,7 @@ async function run() {
               background.__checkNative.push(message);
               const reply = value => listeners.forEach(listener => listener({ id: message.id, ...value }));
               if (message.action === "saveFile") background.fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(message) }).then(response => response.json()).then(reply).catch(error => reply({ ok: false, error: error.message }));
-              else setTimeout(() => reply({ ok: true, result: message.action === "probe" ? { ytDlp: true, ejs: true, ffmpeg: true, ffprobe: true, jsRuntime: true, saveFolderSupported: true, filenameSupported: true } : background.__checkFolderCancelled ? { cancelled: true } : { folder } }), 20);
+              else setTimeout(() => reply({ ok: true, result: message.action === "probe" ? { ytDlp: true, ejs: true, ffmpeg: true, ffprobe: true, jsRuntime: true, saveFolderSupported: true, filenameSupported: true, securityLimitsSupported: true } : background.__checkFolderCancelled ? { cancelled: true } : { folder } }), 20);
             }
           };
         };

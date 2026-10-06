@@ -312,16 +312,21 @@
 
   function nativeRequest(action, values = {}, timeoutMs = 15000, onRequestId = null) {
     return new Promise((resolve, reject) => {
+      const message = { id: `extension-${nativeSequence++}`, action, ...values };
+      if (new TextEncoder().encode(JSON.stringify(message)).byteLength > 65536) {
+        reject(new Error("The download request is too large. Open the video on its own page and try again."));
+        return;
+      }
       let port;
       try { port = connectNative(); } catch (error) { reject(error); return; }
-      const id = `extension-${nativeSequence++}`;
+      const id = message.id;
       if (onRequestId) onRequestId(id);
       const timer = setTimeout(() => {
         nativeRequests.delete(id);
         reject(new Error("The local companion did not respond. Check its installation and try again."));
       }, timeoutMs);
       nativeRequests.set(id, { resolve, reject, timer });
-      try { port.postMessage({ id, action, ...values }); }
+      try { port.postMessage(message); }
       catch (error) { nativeRequests.delete(id); clearTimeout(timer); reject(error); }
     });
   }

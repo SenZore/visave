@@ -1,4 +1,5 @@
 import io
+import collections
 import ctypes
 import errno
 import json
@@ -86,6 +87,26 @@ class ExplorerTests(unittest.TestCase):
 
 
 class ProtocolTests(unittest.TestCase):
+    def test_downloader_diagnostics_are_bounded_even_without_newlines(self):
+        stream = io.StringIO("a" * 1048576)
+        lines = collections.deque(maxlen=80)
+        host.DownloadJob._read_stderr(None, stream, lines)
+        self.assertLessEqual(sum(map(len, lines)), 80 * 8192)
+        self.assertTrue(stream.closed)
+
+    def test_oversized_frame_with_body_ends_connection_after_one_error(self):
+        body = b"\xff" * (host.MAX_MESSAGE_BYTES + 1)
+        reader = io.BytesIO(struct.pack("=I", len(body)) + body + host.encode_message({"id": 2, "action": "probe"}))
+        output = io.BytesIO()
+        application = host.NativeHost(reader, host.NativeWriter(output))
+        with mock.patch.object(application, "_prepare") as prepare:
+            application.serve()
+        prepare.assert_not_called()
+        output.seek(0)
+        self.assertFalse(host.read_message(output)["ok"])
+        self.assertIsNone(host.read_message(output))
+        self.assertEqual(reader.tell(), 4)
+
     def test_round_trip_frame_uses_native_uint32_and_utf8_json(self):
         message = {"id": "café", "action": "probe"}
         frame = host.encode_message(message)
@@ -237,7 +258,7 @@ class ArgumentTests(unittest.TestCase):
         self.assertEqual(args[args.index("--print") + 1], "after_move:" + host.FILE_PREFIX + "%(filepath)j")
         filter_index = args.index("--match-filter")
         self.assertEqual(args[filter_index + 1], "!is_live")
-        self.assertEqual(args[:3], [r"C:\Helper\.venv\Scripts\python.exe", "-m", "yt_dlp"])
+        self.assertEqual(args[:2], [r"C:\Helper\.venv\Scripts\python.exe", str(PROJECT_ROOT / "native/downloader_worker.py")])
 
     def test_capped_quality_allows_formats_with_unknown_height(self):
         args = self.build(self.request(quality="720"))

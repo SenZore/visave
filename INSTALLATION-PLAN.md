@@ -1,11 +1,11 @@
 # visave installation and release status
 
-Updated October 6, 2026. The public project is [SenZore/visave](https://github.com/SenZore/visave). Version 0.3.2 is an unsigned Windows x64 preview. A signed AMO listing is a future goal, not an approved or available release.
+Updated October 6, 2026. The public project is [SenZore/visave](https://github.com/SenZore/visave). Version 0.3.3 is an unsigned Windows x64 preview. A signed AMO listing is a future goal, not an approved or available release.
 
 ## First-time setup
 
-1. Install the unsigned extension ZIP from the 0.3.2 preview release as a temporary add-on in Firefox. Use `about:debugging#/runtime/this-firefox` and **Load Temporary Add-on**. Firefox removes temporary add-ons when it restarts.
-2. In the extension, open **Settings → Installation** and select **Install dependencies**. The extension downloads `visave-setup-0.3.2.exe` from GitHub Releases.
+1. Install the unsigned extension ZIP from the 0.3.3 preview release as a temporary add-on in Firefox. Use `about:debugging#/runtime/this-firefox` and **Load Temporary Add-on**. Firefox removes temporary add-ons when it restarts.
+2. In the extension, open **Settings → Installation** and select **Install dependencies**. The extension downloads `visave-setup-0.3.3.exe` from GitHub Releases.
 3. Open the downloaded setup program once and select **Install**. Firefox cannot install native Windows programs itself, so this user action is required.
 4. Setup installs the companion for the current Windows user, checks its files and dependencies, and registers the native messaging connection. It does not require administrator access or install dependencies system-wide.
 5. Return to Firefox. The extension checks whether the companion is ready; use **Check installation** to check again manually. Choose a download folder in Settings before downloading.

@@ -2,9 +2,10 @@
   "use strict";
 
   function httpUrl(value) {
+    if (typeof value !== "string" || value.length > 8192) return null;
     try {
       const url = new URL(value);
-      return ["http:", "https:"].includes(url.protocol) && !url.username && !url.password ? url.href : null;
+      return url.href.length <= 8192 && ["http:", "https:"].includes(url.protocol) && !url.username && !url.password ? url.href : null;
     } catch {
       return null;
     }
@@ -113,7 +114,7 @@
   function installationMissing(info) {
     return [["yt-dlp", info?.ytDlp], ["FFmpeg", info?.ffmpeg], ["FFprobe", info?.ffprobe],
       ["Node.js", info?.jsRuntime], ["YouTube challenge support", info?.ejs],
-      ["saved-folder support", info?.saveFolderSupported]].filter(([, found]) => !found).map(([name]) => name);
+      ["saved-folder support", info?.saveFolderSupported], ["current download protections", info?.securityLimitsSupported]].filter(([, found]) => !found).map(([name]) => name);
   }
 
   const api = { httpUrl, siteName, sourceKind, safeFilename, timeLabel, downloadPlan, cleanTitle, youtubeId, thumbnailFor, isGhost, currentVideo, installationMissing };

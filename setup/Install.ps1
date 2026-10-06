@@ -4,7 +4,7 @@ $ErrorActionPreference = 'Stop'
 $bundle = [IO.Path]::GetFullPath($PSScriptRoot)
 if ([Environment]::OSVersion.Version.Major -lt 10 -or -not [Environment]::Is64BitOperatingSystem -or $env:PROCESSOR_ARCHITECTURE -eq 'ARM64' -or $env:PROCESSOR_ARCHITEW6432 -eq 'ARM64') { throw 'This bundle needs x64 Windows 10 or newer. ARM Windows is not supported yet.' }
 $inventory = Get-Content -LiteralPath (Join-Path $bundle 'SHA256SUMS.json') -Raw | ConvertFrom-Json
-if ($inventory.version -ne '0.3.2' -or $inventory.files.Count -lt 10) { throw 'Invalid bundle manifest. Extract the complete ZIP again.' }
+if ($inventory.version -ne '0.3.3' -or $inventory.files.Count -lt 10) { throw 'Invalid bundle manifest. Extract the complete ZIP again.' }
 Write-Host 'Checking bundled files...'
 foreach ($entry in $inventory.files) {
     $candidate = [IO.Path]::GetFullPath((Join-Path $bundle $entry.path))

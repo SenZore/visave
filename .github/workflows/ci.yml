@@ -26,6 +26,7 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run lint
+      - run: python -m pip install --require-hashes -r setup/windows-requirements.txt
       - run: python -m unittest discover -s tests/native -v
       - run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/bootstrap-check.ps1
       - run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/media-tools-check.ps1
