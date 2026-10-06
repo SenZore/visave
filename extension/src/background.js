@@ -213,6 +213,11 @@
     if (capabilities.saveFolderSupported !== true) throw new Error("Update the visave installation to use a saved folder.");
   }
 
+  async function requireInstallation() {
+    const missing = VideoLens.installationMissing(await nativeRequest("probe"));
+    if (missing.length) throw new Error("Install dependencies before downloading. Missing " + missing.join(", ") + ".");
+  }
+
   async function chooseFolder() {
     await requireFolderSupport();
     const selection = await nativeRequest("chooseFolder", {}, 300_000);
@@ -231,6 +236,7 @@
     if (plan.route !== "browser" || !safeHttp(video.sourceUrl) || video.sourceKind === "segment") throw new Error(plan.reason || "This player does not expose a complete downloadable file.");
     const folder = await savedFolder();
     if (folder) await requireFolderSupport();
+    await requireInstallation();
     const id = jobId("browser");
     const job = storeJob({ jobId: id, tabId: tab.id, title: video.title, output, saveFolder: folder, state: "starting", percent: null, filename: "", error: "", kind: "browser", downloadId: null, autoRevealPending: !folder, createdAt: Date.now() });
     try {
@@ -291,6 +297,7 @@
       if (message?.event && message.jobId) updateNativeJob(message);
     });
     port.onDisconnect.addListener(() => {
+      if (nativePort !== port) return;
       const error = new Error(port.error?.message || browser.runtime.lastError?.message || "The local companion disconnected.");
       nativePort = null;
       for (const pending of nativeRequests.values()) { clearTimeout(pending.timer); pending.reject(error); }
@@ -358,6 +365,7 @@
       if (!folder && (await nativeRequest("probe")).filenameSupported !== true) throw new Error("Update the visave installation for random Instagram filenames.");
       values.filename = downloadFilename(video, message.output);
     }
+    await requireInstallation();
     const response = await nativeRequest("download", values);
     const id = boundedText(response?.jobId).slice(0, 128);
     if (!id) throw new Error("The local companion returned an invalid job identifier.");
@@ -403,7 +411,25 @@
       case "REFRESH": return refresh(message.tabId);
       case "CONTROL": return control(message);
       case "FILE_DOWNLOAD": return fileDownload(message);
-      case "HELPER_PROBE": return nativeRequest("probe");
+      case "HELPER_PROBE": {
+        const active = Array.from(jobs.values()).some(job => ["starting", "downloading", "converting", "saving", "awaiting_save"].includes(job.state));
+        // Reconnect after setup updates the registration, without interrupting a download.
+        if (nativePort && !active && nativeRequests.size === 0) {
+          const previous = nativePort;
+          nativePort = null;
+          previous.disconnect();
+        }
+        return nativeRequest("probe");
+      }
+      case "INSTALL_DEPENDENCIES": {
+        const platform = await browser.runtime.getPlatformInfo();
+        if (platform.os !== "win" || platform.arch !== "x86-64") throw new Error("The installer supports x64 Windows 10 and 11. macOS, Linux and ARM packages are not available yet.");
+        const version = browser.runtime.getManifest().version;
+        if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error("Invalid release version.");
+        const filename = `visave-setup-${version}.exe`;
+        const downloadId = await browser.downloads.download({ url: `https://github.com/SenZore/visave/releases/download/v${version}/${filename}`, filename, saveAs: false });
+        return { downloadId, filename };
+      }
       case "HELPER_DOWNLOAD": return helperDownload(message);
       case "CHOOSE_FOLDER": return chooseFolder();
       case "CANCEL_JOB": return cancelJob(message.jobId);
@@ -418,10 +444,13 @@
       if (!isContent(sender)) return Promise.resolve(failure("Video snapshots are accepted only from inspected tabs."));
       return Promise.resolve(ready).then(() => acceptSnapshot(message, sender)).then(result, failure);
     }
-    const privilegedTypes = new Set(["GET_STATE", "REFRESH", "CONTROL", "FILE_DOWNLOAD", "HELPER_PROBE", "HELPER_DOWNLOAD", "CHOOSE_FOLDER", "CANCEL_JOB", "SHOW_DOWNLOAD"]);
+    const privilegedTypes = new Set(["GET_STATE", "REFRESH", "CONTROL", "FILE_DOWNLOAD", "HELPER_PROBE", "INSTALL_DEPENDENCIES", "HELPER_DOWNLOAD", "CHOOSE_FOLDER", "CANCEL_JOB", "SHOW_DOWNLOAD"]);
     if (!privilegedTypes.has(message.type)) return undefined;
     if (!isExtensionUi(sender)) return Promise.resolve(failure("Privileged requests are accepted only from visave pages."));
     return Promise.resolve().then(() => privileged(message)).then(result, failure);
+  });
+  browser.runtime.onInstalled?.addListener(details => {
+    if (details.reason === "install") browser.tabs.create({ url: browser.runtime.getURL("guide.html") });
   });
 
   async function updateBrowserDownload(delta) {

@@ -26,5 +26,5 @@ length = struct.unpack('=I', response[:4])[0]
 reply = json.loads(response[4:4 + length])
 assert reply['ok'], reply
 info = reply['result']
-assert all(info[key] for key in ('ytDlp', 'ffmpeg', 'ffprobe', 'jsRuntime', 'saveFolderSupported', 'filenameSupported')), info
+assert all(info[key] for key in ('ytDlp', 'ejs', 'ffmpeg', 'ffprobe', 'jsRuntime', 'saveFolderSupported', 'filenameSupported')), info
 print('Offline checks passed: private Python, yt-dlp/EJS, Node.js, MP4/MP3 conversion, native-message protocol.')

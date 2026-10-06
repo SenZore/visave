@@ -4,6 +4,7 @@ const ui = Object.fromEntries(Array.from(document.querySelectorAll("[id]")).map(
 let state = null;
 let selectedUid = null;
 let helper = null;
+let checkingHelper = false;
 let refreshing = false;
 let busy = false;
 let manualSelection = false;
@@ -91,7 +92,7 @@ function openMenu(uid, trigger) {
   closePanel(false);
   selectVideo(uid);
   menuUid = uid;
-  const can = (output) => !busy && VideoLens.downloadPlan(video, output).route !== "disabled";
+  const can = (output) => !busy && !VideoLens.installationMissing(helper).length && VideoLens.downloadPlan(video, output).route !== "disabled";
   const items = [
     ["Download video (MP4)", () => runDownload(uid, "mp4"), !can("mp4")],
     ["Download audio (MP3)", () => runDownload(uid, "mp3"), !can("mp3")],
@@ -261,9 +262,9 @@ function renderRows(videos) {
     formatSelect.setAttribute("aria-label", "Download format: " + title);
     formatSelect.disabled = busy;
     button.textContent = "Download";
-    button.disabled = busy || VideoLens.downloadPlan(video, output).route === "disabled";
+    button.disabled = busy || VideoLens.installationMissing(helper).length > 0 || VideoLens.downloadPlan(video, output).route === "disabled";
     button.setAttribute("aria-label", "Download " + output + ": " + title);
-    button.title = VideoLens.downloadPlan(video, output).reason;
+    button.title = VideoLens.installationMissing(helper).length ? "Install dependencies in Settings before downloading." : VideoLens.downloadPlan(video, output).reason;
   });
   if (focused?.isConnected && document.activeElement !== focused && focused.closest(".video-row")) focused.focus({ preventScroll: true });
 }
@@ -296,6 +297,7 @@ function renderPlayer() {
 }
 
 function renderDownload() {
+  ui["setup-hint"].hidden = VideoLens.installationMissing(helper).length === 0;
   const video = selectedVideo();
   const output = ui.output.value;
   const plan = output === "original" && !["mp4", "webm", "ogg", "video"].includes(video?.sourceKind)
@@ -304,7 +306,7 @@ function renderDownload() {
   ui["download-reason"].textContent = plan.reason;
   if (plan.route === "helper" && output === "mp4" && ui.quality.value !== "best") ui["download-reason"].textContent += " If the site does not report dimensions, the helper uses the available source.";
   ui.download.textContent = output === "original" ? "Download original file" : `Download ${output.toUpperCase()}`;
-  ui.download.disabled = busy || plan.route === "disabled";
+  ui.download.disabled = busy || VideoLens.installationMissing(helper).length > 0 || plan.route === "disabled";
   ui.quality.disabled = output !== "mp4" || plan.route !== "helper";
   ui["cookie-choice"].hidden = plan.route !== "helper";
   ui["cookie-note"].hidden = plan.route !== "helper";
@@ -365,18 +367,21 @@ async function refresh(force = false) {
 }
 
 async function checkHelper() {
+  if (checkingHelper) return helper;
+  checkingHelper = true;
   ui["check-helper"].disabled = true;
   ui["helper-status"].textContent = "Checking installation...";
   try {
     helper = await request("HELPER_PROBE");
-    const missing = [!helper.ytDlp && "yt-dlp", !helper.ffmpeg && "FFmpeg", helper.ffprobe === false && "FFprobe"].filter(Boolean);
-    ui["helper-status"].textContent = missing.length ? `Installation incomplete. Install ${missing.join(", ")} before downloading.` : `Installation ready.${helper.jsRuntime ? "" : " YouTube downloads also need Node.js."}`;
+    const missing = VideoLens.installationMissing(helper);
+    ui["helper-status"].textContent = missing.length ? `Installation incomplete. Missing ${missing.join(", ")}. Run the installer, then check again.` : "Installation ready. Downloads are enabled.";
+    ui["install-dependencies"].textContent = missing.length ? "Install dependencies" : "Repair installation";
     return helper;
   } catch (error) {
     helper = null;
-    ui["helper-status"].textContent = `Installation needed: ${error.message} Open the setup instructions below.`;
+    ui["helper-status"].textContent = "Installation needed. Click Install dependencies, open the downloaded setup file, then click Install.";
     throw error;
-  } finally { ui["check-helper"].disabled = false; }
+  } finally { checkingHelper = false; ui["check-helper"].disabled = false; renderDownload(); }
 }
 
 async function download() {
@@ -462,6 +467,17 @@ ui.download.addEventListener("click", download);
 ui["play-pause"].addEventListener("click", () => control("playPause"));
 ui.mute.addEventListener("click", () => control("mute"));
 ui["check-helper"].addEventListener("click", () => checkHelper().catch(() => {}));
+async function installDependencies(event) {
+  const button = event.currentTarget;
+  button.disabled = true;
+  try {
+    const setup = await request("INSTALL_DEPENDENCIES");
+    notice(`Setup is downloading. Open ${setup.filename} from Firefox Downloads, then click Install. Downloads unlock when all components are detected.`);
+  } catch (error) { notice(error.message, true); }
+  finally { button.disabled = false; }
+}
+ui["install-dependencies"].addEventListener("click", installDependencies);
+ui["install-start"].addEventListener("click", installDependencies);
 ui.cancel.addEventListener("click", async () => {
   try { await request("CANCEL_JOB", { jobId: visibleJobId }); await refresh(); }
   catch (error) { actionError(error.message); }
@@ -514,7 +530,9 @@ async function start() {
   } catch { /* The popup remains usable if preferences are unavailable. */ }
   renderSaveFolder();
   await refresh(true);
+  checkHelper().catch(() => {});
   const timer = setInterval(() => { if (!busy) refresh(true); }, 1000);
-  window.addEventListener("pagehide", () => clearInterval(timer), { once: true });
+  const installationTimer = setInterval(() => { if (!busy && !document.hidden && VideoLens.installationMissing(helper).length) checkHelper().catch(() => {}); }, 5000);
+  window.addEventListener("pagehide", () => { clearInterval(timer); clearInterval(installationTimer); }, { once: true });
 }
 start();

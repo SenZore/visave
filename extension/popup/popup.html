@@ -14,6 +14,7 @@
     </header>
     <p id="notice" class="notice" role="status" aria-live="polite">Looking for videos in this tab...</p>
     <p id="action-status" class="notice error" role="alert" hidden></p>
+    <p id="setup-hint" class="hint">Downloads need setup. <button id="install-start" type="button">Install dependencies</button></p>
     <section id="player" hidden aria-label="Videos on this page">
       <p id="watching-label" class="current-label" hidden></p>
       <div id="video" role="list"></div>
@@ -77,7 +78,8 @@
           <summary>Installation</summary>
           <p class="hint">Install once to enable supported-site downloads, audio conversion, and saved folders.</p>
           <p id="helper-status" role="status">Installation has not been checked.</p>
-          <div class="helper-controls"><button id="check-helper" type="button">Check installation</button><a href="../guide.html" id="guide" target="_blank" rel="noopener">Installation process</a></div>
+          <div class="helper-controls"><button id="install-dependencies" type="button">Install dependencies</button><button id="check-helper" type="button">Check installation</button><a href="../guide.html" id="guide" target="_blank" rel="noopener">Setup instructions</a></div>
+          <p class="hint">Open the downloaded Windows installer once, then click Install. This popup checks automatically while open.</p>
         </details>
       </details>
       <div class="footer-links"><a href="../sites.html" target="_blank" rel="noopener">Supported sites</a><span>made by <a class="credit" href="https://github.com/senzore" target="_blank" rel="noopener">senzdev</a></span></div>

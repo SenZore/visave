@@ -2,31 +2,23 @@
 
 visave is a Firefox extension for inspecting videos on a page and saving available video or audio. A bundled Windows companion handles supported-site extraction, stream merging, audio conversion, and a persistent download folder.
 
-The project is maintained by [senzdev](https://github.com/senzore). The public preview is version 0.3.1. It is unsigned and must be loaded as a temporary add-on in Firefox. Firefox removes temporary add-ons when it restarts. Permanent installation requires Mozilla signing; no signed release or AMO listing is available yet.
+The project is maintained by [senzdev](https://github.com/senzore). Version 0.3.2 is an unsigned preview. Load the Firefox extension as a temporary add-on; Firefox removes it when it restarts. A signed AMO release is a future goal, and no approved AMO listing or signed release is available yet.
 
 ## Windows installation
 
-Download the [Windows bundle](https://github.com/SenZore/visave/releases/download/v0.3.1/visave-windows-0.3.1.zip) and its [SHA-256 checksum](https://github.com/SenZore/visave/releases/download/v0.3.1/visave-windows-0.3.1.sha256) from the [0.3.1 preview release](https://github.com/SenZore/visave/releases/tag/v0.3.1). The bundle targets x64 Windows 10 and Windows 11. The release also provides the [unsigned Firefox extension ZIP](https://github.com/SenZore/visave/releases/download/v0.3.1/senzdev_visave-0.3.1.zip) and [source archive](https://github.com/SenZore/visave/releases/download/v0.3.1/visave-source.zip).
+For the unsigned preview, first load the [Firefox extension ZIP](https://github.com/SenZore/visave/releases/download/v0.3.2/senzdev_visave-0.3.2.zip) as a temporary add-on. In Firefox, open `about:debugging#/runtime/this-firefox`, select **Load Temporary Add-on**, and choose the ZIP. Firefox removes temporary add-ons when it restarts, so you must load it again after a restart.
 
-For the guided setup, download the bundle, extract it, and open `START-HERE.html`. Review the instructions, then run `Setup.cmd`. Setup installs the bundled files for the current Windows user and checks them before registering the Firefox connection. Setup needs internet access to download FFmpeg from its publisher and verify the pinned SHA-256 hash. You do not need to install Python, Node.js, or FFmpeg yourself.
+Then install the Windows companion from the extension:
 
-The optional PowerShell bootstrap downloads the same versioned bundle and verifies its SHA-256 checksum before starting setup:
+1. Open **Settings → Installation** and select **Install dependencies**. The extension downloads [`visave-setup-0.3.2.exe`](https://github.com/SenZore/visave/releases/download/v0.3.2/visave-setup-0.3.2.exe) from the [0.3.2 preview release](https://github.com/SenZore/visave/releases/tag/v0.3.2).
+2. Open the downloaded installer once. It installs for your Windows user and does not need administrator access. Windows may warn that the publisher is unknown because this preview installer is unsigned. This guide does not advise bypassing Windows warnings; stop if you are unsure about a prompt or the file's source.
+3. In the installer, select **Install**. It downloads and installs the required components, then registers the Firefox connection. Setup needs internet access.
+4. Return to the extension. It checks the connection automatically; you can also select **Check installation**.
+5. Choose a folder under **Settings → Save downloaded files to**. Refresh a supported video page, start playback, and use the **Now playing** row to download.
 
-```powershell
-irm https://raw.githubusercontent.com/senzore/visave/v0.3.1/install.ps1 | iex
-```
+The setup program installs per user. It does not install Python, Node.js, or FFmpeg system-wide. Setup downloads pinned Python, Node.js, yt-dlp dependencies, and FFmpeg from their publishers; the FFmpeg archive is verified before installation. These private components use disk space and setup requires an internet connection. Firefox cannot install native Windows programs for an extension, so you must open the setup program and select **Install** yourself. This is a short manual step, not a silent or one-click installation.
 
-This command executes the published `install.ps1` script. If you prefer to inspect it first, download `install.ps1` from the tagged source, review it, and run it locally. You can also download and inspect the release ZIP manually.
-
-After the companion setup completes, load the extension ZIP from the bundle:
-
-1. In Firefox, open `about:debugging#/runtime/this-firefox`.
-2. Select **Load Temporary Add-on** and choose `visave-firefox-0.3.1.zip` from the extracted bundle.
-3. In visave, open **Settings → Installation → Check installation**.
-4. Choose a download folder in **Settings → Save downloaded files to**.
-5. Refresh a supported video page, start playback, and use the **Now playing** row to download.
-
-The extension may need to be loaded again after each Firefox restart until Mozilla signs a permanent release. Site support depends on each page, account state, and current extractor behavior. The list in visave is an offline snapshot, not a guarantee that every listed site or video will work. DRM downloads and active live streams are disabled.
+The [0.3.2 preview release](https://github.com/SenZore/visave/releases/tag/v0.3.2) provides the [Windows bundle](https://github.com/SenZore/visave/releases/download/v0.3.2/visave-windows-0.3.2.zip), its [SHA-256 checksum](https://github.com/SenZore/visave/releases/download/v0.3.2/visave-windows-0.3.2.sha256), the [unsigned Firefox extension ZIP](https://github.com/SenZore/visave/releases/download/v0.3.2/senzdev_visave-0.3.2.zip), and [source archive](https://github.com/SenZore/visave/releases/download/v0.3.2/visave-source.zip). Review the installer and release notes before running it. Do not treat a checksum as proof that a file is safe.
 
 ## What it does
 
@@ -47,7 +39,7 @@ visave does not send telemetry. Downloads connect to the page's source site. Opt
 
 The Windows bundle contains readable setup scripts and application source, a `SHA256SUMS.json` file, dependency inventories, hash-pinned Python requirements, and dependency license files. It does not contain FFmpeg binaries. Setup downloads the pinned FFmpeg archive from its publisher and checks its SHA-256 hash before installing it. The checksums detect changes relative to their supplied manifests. They do not prove that a file is safe or that the publisher is trusted.
 
-The 0.3.1 preview is unsigned and has not had an independent security audit. Review the source and bundle before running them. Read [docs/FIREFOX-RELEASE.md](docs/FIREFOX-RELEASE.md) for the temporary-install limitation and release status, and [SECURITY.md](SECURITY.md) for vulnerability reports.
+The 0.3.2 preview is unsigned and has not had an independent security audit. Review the source and release files before running them. Read [docs/FIREFOX-RELEASE.md](docs/FIREFOX-RELEASE.md) for the temporary-install limitation and release status, and [SECURITY.md](SECURITY.md) for vulnerability reports.
 
 ## Development
 

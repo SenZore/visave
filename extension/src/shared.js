@@ -110,7 +110,13 @@
     return { route: "helper", reason: output === "mp3" ? "The local companion extracts audio and converts it to MP3." : "The local companion downloads and combines video and audio into MP4." };
   }
 
-  const api = { httpUrl, siteName, sourceKind, safeFilename, timeLabel, downloadPlan, cleanTitle, youtubeId, thumbnailFor, isGhost, currentVideo };
+  function installationMissing(info) {
+    return [["yt-dlp", info?.ytDlp], ["FFmpeg", info?.ffmpeg], ["FFprobe", info?.ffprobe],
+      ["Node.js", info?.jsRuntime], ["YouTube challenge support", info?.ejs],
+      ["saved-folder support", info?.saveFolderSupported]].filter(([, found]) => !found).map(([name]) => name);
+  }
+
+  const api = { httpUrl, siteName, sourceKind, safeFilename, timeLabel, downloadPlan, cleanTitle, youtubeId, thumbnailFor, isGhost, currentVideo, installationMissing };
   root.VideoLens = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(globalThis);

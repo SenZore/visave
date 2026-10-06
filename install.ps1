@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidatePattern('^\d+\.\d+\.\d+$')][string]$Version = '0.3.1',
+    [ValidatePattern('^\d+\.\d+\.\d+$')][string]$Version = '0.3.2',
     [switch]$DownloadOnly,
     [switch]$NoOpenGuide
 )
@@ -36,9 +36,10 @@ function Get-VisaveBundle {
     $archive = Join-Path $WorkRoot $asset
     $checksum = Join-Path $WorkRoot ('visave-windows-' + $ReleaseVersion + '.sha256')
     Write-Host ('Downloading visave ' + $ReleaseVersion + ' from GitHub. Setup also downloads FFmpeg from its publisher.')
+    $ProgressPreference = 'SilentlyContinue'
     try {
-        Invoke-WebRequest -Uri ($release + '/' + $asset) -OutFile $archive -UseBasicParsing -ErrorAction Stop
-        Invoke-WebRequest -Uri ($release + '/visave-windows-' + $ReleaseVersion + '.sha256') -OutFile $checksum -UseBasicParsing -ErrorAction Stop
+        Invoke-WebRequest -Uri ($release + '/' + $asset) -OutFile $archive -UseBasicParsing -TimeoutSec 300 -ErrorAction Stop
+        Invoke-WebRequest -Uri ($release + '/visave-windows-' + $ReleaseVersion + '.sha256') -OutFile $checksum -UseBasicParsing -TimeoutSec 300 -ErrorAction Stop
     } catch {
         throw ('Could not download release v' + $ReleaseVersion + '. Check your connection and https://github.com/senzore/visave/releases. Nothing was installed. ' + $_.Exception.Message)
     }

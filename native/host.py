@@ -21,7 +21,7 @@ from typing import Any, BinaryIO, Callable
 from urllib.parse import urlsplit
 
 
-HELPER_VERSION = "1.4.1"
+HELPER_VERSION = "1.5.0"
 MAX_MESSAGE_BYTES = 1_048_576
 MAX_URL_LENGTH = 8_192
 MAX_ERROR_LENGTH = 1_200
@@ -301,6 +301,7 @@ def probe_result() -> dict[str, Any]:
         "version": HELPER_VERSION,
         "ytDlp": bool(yt_dlp_version and importlib.util.find_spec("yt_dlp")),
         "ytDlpVersion": yt_dlp_version,
+        "ejs": bool(importlib.util.find_spec("yt_dlp_ejs")),
         "ffmpeg": bool(tools["ffmpeg"]),
         "ffprobe": bool(tools["ffprobe"]),
         "jsRuntime": bool(tools["node"]),

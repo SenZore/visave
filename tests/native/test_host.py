@@ -574,7 +574,12 @@ class ProbeTests(unittest.TestCase):
         self.assertEqual(result["ytDlpVersion"], "2026.1.1")
         self.assertTrue(result["ffmpeg"])
         self.assertTrue(result["ffprobe"])
+        self.assertTrue(result["ejs"])
         self.assertFalse(result["jsRuntime"])
+
+    def test_probe_reports_missing_youtube_solver(self):
+        with mock.patch.object(host.importlib.util, "find_spec", side_effect=lambda name: None if name == "yt_dlp_ejs" else object()):
+            self.assertFalse(host.probe_result()["ejs"])
 
 
 class FailureTests(unittest.TestCase):

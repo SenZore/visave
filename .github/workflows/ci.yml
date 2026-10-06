@@ -30,3 +30,4 @@ jobs:
       - run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/bootstrap-check.ps1
       - run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/media-tools-check.ps1
       - run: npm run build
+      - run: python tools/build-bootstrap.py

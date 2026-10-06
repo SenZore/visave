@@ -62,7 +62,7 @@ with tempfile.TemporaryDirectory(prefix='visave-installer-', dir=root / 'test-re
         response = subprocess.run(['cmd.exe', '/d', '/c', str(launcher)], input=struct.pack('=I', len(payload)) + payload, env=environment, capture_output=True, check=True, timeout=30)
         length = struct.unpack('=I', response.stdout[:4])[0]
         reply = json.loads(response.stdout[4:4 + length])
-        assert reply['ok'] and reply['result']['version'] == '1.4.1', reply
+        assert reply['ok'] and reply['result']['version'] == '1.5.0', reply
         original_host = (bundle / 'app/host.py').read_bytes()
         (bundle / 'app/host.py').write_bytes(original_host + b'\n# changed\n')
         result = run(bundle / 'Install.ps1')

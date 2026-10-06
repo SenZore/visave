@@ -130,20 +130,40 @@ async function run() {
       browser.runtime.getBackgroundPage().then((background) => {
         background.__checkDownloads = [];
         background.__checkReveals = [];
+        background.__checkSetupReady = true;
+        background.__checkInstallers = [];
         const download = background.browser.downloads.download.bind(background.browser.downloads);
         background.browser.downloads.download = (preferences) => {
+          if (preferences.filename.endsWith('.exe')) {
+            background.__checkInstallers.push(preferences);
+            return Promise.resolve(999);
+          }
           background.__checkDownloads.push(preferences);
           return download({ ...preferences, saveAs: false });
         };
         background.browser.downloads.show = async (id) => { background.__checkReveals.push(id); return true; };
-        background.browser.runtime.connectNative = () => { throw new Error("Helper intentionally unavailable in this isolated test"); };
+        background.browser.runtime.connectNative = () => {
+          const listeners = [], disconnects = [];
+          return {
+            onMessage: { addListener: listener => listeners.push(listener) },
+            onDisconnect: { addListener: listener => disconnects.push(listener) },
+            disconnect() { disconnects.forEach(listener => listener()); },
+            postMessage(message) {
+              const installed = background.__checkSetupReady;
+              const result = { ytDlp: true, ejs: true, ffmpeg: true, ffprobe: true, jsRuntime: true, saveFolderSupported: true, filenameSupported: true };
+              setTimeout(() => listeners.forEach(listener => listener({ id: message.id, ok: installed && message.action === 'probe', result, error: 'Helper intentionally unavailable in this isolated test' })), 20);
+            }
+          };
+        };
         done({ ok: true });
       }).catch((error) => done({ error: error.message }));
     });
     assert.equal(harness.ok, true, JSON.stringify(harness));
+    await driver.executeAsyncScript("const done=arguments[arguments.length-1];browser.runtime.sendMessage({type:'HELPER_PROBE'}).then(()=>browser.runtime.sendMessage({type:'HELPER_PROBE'})).then(done)");
     const inspector = extensionOrigin + "/popup/popup.html?tabId=" + tabId;
     await driver.get(inspector);
     await driver.wait(async () => (await driver.findElements(By.css(".video-row"))).length >= 3, 15000);
+    await driver.wait(async () => (await driver.findElement(By.id("helper-status")).getAttribute('textContent')).includes('Installation ready'), 10000);
     assert.equal(await driver.findElement(By.id("panel")).isDisplayed(), false);
     assert.equal(await driver.findElement(By.id("watching-label")).getText(), "Now playing");
     assert.equal(await driver.findElement(By.css("#video .row-title")).getText(), mainTitle);
@@ -264,7 +284,20 @@ async function run() {
     assert.equal(await driver.executeScript("return document.querySelector('.helper-details').open"), false);
     await helperSummary.sendKeys(Key.ENTER);
     await driver.findElement(By.id("check-helper")).click();
+    await driver.executeAsyncScript("const done=arguments[arguments.length-1];browser.runtime.getBackgroundPage().then(bg=>{bg.__checkSetupReady=false;done(true)})");
+    await driver.wait(until.elementIsEnabled(driver.findElement(By.id("check-helper"))), 5000);
+    await driver.findElement(By.id("check-helper")).click();
     await driver.wait(async () => (await driver.findElement(By.id("helper-status")).getText()).includes("Installation needed"), 10000);
+    assert.equal(await (await row(mainTitle)).findElement(By.css('.row-download')).isEnabled(), false);
+    await driver.findElement(By.id("install-dependencies")).click();
+    const installers = await driver.executeAsyncScript("const done=arguments[arguments.length-1];browser.runtime.getBackgroundPage().then(bg=>done(bg.__checkInstallers))");
+    assert.equal(installers.length, 1);
+    assert.equal(installers[0].url, 'https://github.com/SenZore/visave/releases/download/v0.3.2/visave-setup-0.3.2.exe');
+    assert.equal(installers[0].saveAs, false);
+    await driver.executeAsyncScript("const done=arguments[arguments.length-1];browser.runtime.getBackgroundPage().then(bg=>{bg.__checkSetupReady=true;done(true)})");
+    await driver.wait(async () => (await driver.findElement(By.id("helper-status")).getText()).includes("Installation ready"), 12000);
+    assert.equal(await (await row(mainTitle)).findElement(By.css('.row-download')).isEnabled(), true);
+    checks.push("Install button downloads the versioned Windows installer; downloads stay disabled until automatic checks detect all tools");
     checks.push("Settings and helper details open/close with mouse and keyboard; helper check provides an actionable unavailable state");
     await openPanel(mainTitle, "options");
     await driver.findElement(By.css('#output option[value="mp3"]')).click();
@@ -314,16 +347,17 @@ async function run() {
     await driver.wait(async () => (await driver.findElement(By.id("job-status")).getText()).includes("cancelled"), 10000);
     assert.equal((await backgroundChecks()).reveals.length, 2);
     checks.push("Cancel stops a real in-progress original download and does not request File Explorer");
+    const beforeGuide = await driver.getAllWindowHandles();
     await driver.findElement(By.id("guide")).click();
-    await driver.wait(async () => (await driver.getAllWindowHandles()).length === 3, 5000);
-    const guideHandle = (await driver.getAllWindowHandles())[2];
+    await driver.wait(async () => (await driver.getAllWindowHandles()).length > beforeGuide.length, 5000);
+    const guideHandle = (await driver.getAllWindowHandles()).find(handle => !beforeGuide.includes(handle));
     await driver.switchTo().window(guideHandle);
     const guideUrls = await Promise.all((await driver.findElements(By.css("main a[href]"))).map((link) => link.getAttribute("href")));
     assert.ok(guideUrls.includes("https://github.com/senzore"));
     assert.ok(guideUrls.includes("https://nodejs.org/"));
     await driver.findElement(By.id("check-installation")).click();
-    await driver.wait(async () => (await driver.findElement(By.id("installation-status")).getText()).includes("Not connected"), 10000);
-    checks.push("Installation guide explains bundled dependencies and reports missing installation with the next action");
+    await driver.wait(async () => (await driver.findElement(By.id("installation-status")).getText()).includes("Installation ready"), 10000);
+    checks.push("Installation guide explains bundled dependencies and confirms readiness after setup");
     await driver.get(extensionOrigin + "/sites.html");
     await driver.wait(async () => (await driver.findElements(By.css("#site-results li"))).length === 60, 10000);
     const firstCount = await driver.findElement(By.id("site-count")).getText();
@@ -415,17 +449,19 @@ async function run() {
           return {
             onMessage: { addListener: listener => listeners.push(listener) },
             onDisconnect: { addListener() {} },
+            disconnect() {},
             postMessage(message) {
               background.__checkNative.push(message);
               const reply = value => listeners.forEach(listener => listener({ id: message.id, ...value }));
               if (message.action === "saveFile") background.fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(message) }).then(response => response.json()).then(reply).catch(error => reply({ ok: false, error: error.message }));
-              else setTimeout(() => reply({ ok: true, result: message.action === "probe" ? { saveFolderSupported: true, filenameSupported: true } : background.__checkFolderCancelled ? { cancelled: true } : { folder } }), 20);
+              else setTimeout(() => reply({ ok: true, result: message.action === "probe" ? { ytDlp: true, ejs: true, ffmpeg: true, ffprobe: true, jsRuntime: true, saveFolderSupported: true, filenameSupported: true } : background.__checkFolderCancelled ? { cancelled: true } : { folder } }), 20);
             }
           };
         };
         done(true);
       });
     }, chosenFolder, origin + "/native-test-move");
+    await driver.executeAsyncScript("const done=arguments[arguments.length-1];browser.runtime.sendMessage({type:'HELPER_PROBE'}).then(done)");
     await settings(true);
     assert.equal(await driver.findElement(By.id("choose-folder")).getText(), "Choose folder…");
     assert.equal((await driver.findElements(By.id("save-before"))).length, 0);

@@ -24,6 +24,8 @@ npm run build
 
 The Windows bundle build downloads upstream runtimes and Python dependencies. It requires Windows PowerShell and network access. The installed companion downloads the pinned FFmpeg archive from its publisher and verifies its SHA-256 hash during setup; that binary is not part of the GitHub release bundle.
 
+The 0.3.2 extension flow downloads the versioned `visave-setup-0.3.2.exe` from GitHub Releases. Users must open the unsigned EXE and select **Install**; Firefox cannot install native Windows programs for an extension. Setup installs per user without administrator access, downloads and verifies its required components, and needs an internet connection. Test the flow from the extension Settings page as well as by running the underlying setup checks. Do not describe it as silent, one-click, AMO-approved, or permanently installable in Firefox while the extension remains unsigned.
+
 ```powershell
 python tools/import-sites.py
 npm run build
@@ -37,5 +39,7 @@ Browser checks use a real Firefox installation and may contact public websites. 
 ## Pull requests
 
 Keep changes focused and describe the user-visible behavior they change. Include the commands you ran and any checks you could not run. Update documentation when installation, permissions, supported behavior, or release contents change.
+
+For installation changes, document the exact sequence from loading the extension through dependency setup, readiness check, and choosing a save folder. Keep the installer version, release asset name, checksum, extension version, and tag aligned. State when a file is unsigned and describe Windows publisher warnings without telling users to bypass them.
 
 Do not add downloaded binaries, generated archives, browser profiles, test results, or secrets to a pull request. Keep upstream license notices and provenance with bundled dependencies, and keep the FFmpeg publisher URL and hash aligned with the setup script.
