@@ -295,7 +295,7 @@ class CompletedFileTests(unittest.TestCase):
 class SaveLocationTests(unittest.TestCase):
     def test_before_picker_runs_before_network_and_is_not_reopened_after_conversion(self):
         with tempfile.TemporaryDirectory() as temporary:
-            directory = Path(temporary)
+            directory = Path(temporary).resolve()
             source = directory / "extracted name.mp4"
             chosen = directory / "chosen café.mp4"
             job = self.job(directory, url="https://example.org/video.webm", quality="best", saveBefore=True, suggestedFilename="Suggested.mp4")
@@ -335,7 +335,7 @@ class SaveLocationTests(unittest.TestCase):
 
     def test_unicode_completed_path_reaches_save_dialog_and_explorer(self):
         with tempfile.TemporaryDirectory() as temporary:
-            directory = Path(temporary)
+            directory = Path(temporary).resolve()
             source = directory / "café ⧸ 音楽.mp4"
             source.write_bytes(b"completed-media")
             chosen = directory / "saved café ⧸ 音楽.mp4"
@@ -363,7 +363,7 @@ class SaveLocationTests(unittest.TestCase):
 
     def test_selected_location_receives_completed_file_and_is_revealed(self):
         with tempfile.TemporaryDirectory() as temporary:
-            directory = Path(temporary)
+            directory = Path(temporary).resolve()
             source = directory / "clip.mp4"
             source.write_bytes(b"completed-media")
             chosen = directory / "chosen.mp4"
@@ -406,8 +406,8 @@ class SaveLocationTests(unittest.TestCase):
 
     def test_cross_volume_move_copies_before_replacing_destination(self):
         with tempfile.TemporaryDirectory() as temporary:
-            source = Path(temporary) / "clip.mp4"
-            target = Path(temporary) / "existing.mp4"
+            source = Path(temporary).resolve() / "clip.mp4"
+            target = Path(temporary).resolve() / "existing.mp4"
             source.write_bytes(b"new")
             target.write_bytes(b"old")
             replace = host.os.replace
