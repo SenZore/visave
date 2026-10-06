@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>visave — supported sites</title><link rel="stylesheet" href="popup/popup.css"><link rel="stylesheet" href="guide.css"></head>
+<body><main>
+<nav><a href="guide.html">Installation</a> · <a href="https://github.com/senzore" target="_blank" rel="noopener">senzdev</a></nav>
+<h1>Supported sites</h1>
+<p>visave uses yt-dlp for site downloads. This is a searchable snapshot of its extractor list, grouped by name. An extractor is a way to read a site's media; several entries can belong to one website.</p>
+<p>Start with YouTube, Instagram, TikTok, Vimeo, Twitch recordings, Facebook, Reddit, or X. Availability depends on the video and your access. Direct video files can work on other sites too.</p>
+<label for="site-search">Find a site or extractor</label><input id="site-search" type="search" placeholder="YouTube, Instagram, Vimeo…" autocomplete="off">
+<p id="site-count" role="status" aria-live="polite">Loading bundled list…</p>
+<ul id="site-results" class="site-results"></ul>
+<button id="more-sites" type="button" hidden>Show more</button>
+<p id="site-source"></p>
+<p><a href="https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md" target="_blank" rel="noopener">Full, current upstream list</a></p>
+<p>This list is not a successful-download test. Entries marked “upstream reports broken” may fail. visave does not download DRM-protected media or active live streams, including when an extractor is listed. Some feeds, unusual players, login restrictions, and site changes can also prevent a download.</p>
+<footer>made by <a class="credit" href="https://github.com/senzore" target="_blank" rel="noopener">senzdev</a></footer>
+</main><script src="sites.js"></script></body></html>

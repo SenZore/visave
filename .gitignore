@@ -1,0 +1,16 @@
+node_modules/
+dist/
+__pycache__/
+*.pyc
+native/.venv/
+native/generated/
+tools/generated/
+test-results/
+.venv/
+.pytest_cache/
+.coverage
+coverage/
+*.log
+.env
+.env.*
+!.env.example

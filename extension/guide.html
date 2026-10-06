@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>visave installation</title><link rel="stylesheet" href="popup/popup.css"><link rel="stylesheet" href="guide.css"></head>
+<body><main>
+<nav><a href="sites.html">Supported sites</a> · <a href="https://github.com/senzore" target="_blank" rel="noopener">senzdev</a></nav>
+<h1>senzdev | visave</h1><p>Save videos from Firefox. Set up the Windows companion, add the Firefox preview extension, and choose your download folder.</p>
+<h2>1. Install on Windows</h2>
+<ol><li>Download the <a href="https://github.com/senzore/visave/releases/tag/v0.3.1" target="_blank" rel="noopener">Windows setup bundle from the visave release page</a>. This preview supports x64 Windows 10 and 11. Extract the entire ZIP to a folder first.</li>
+<li>Double-click <strong>Setup.cmd</strong> while connected to the internet. Setup checks bundled files, downloads the pinned FFmpeg package from its publisher, installs under your Windows user account, and tests the tools before connecting visave to Firefox. You do not need separate Python, Node.js, or FFmpeg installation steps or administrator access.</li>
+<li>Keep the window open until it says <strong>Installation complete</strong>. If a step fails, it shows an error instead of registering a broken installation.</li></ol>
+<p>Alternatively, open PowerShell and run this command. It downloads and runs the published installer, verifies the Windows bundle against its release checksum, then opens the Firefox setup guide. <a href="https://github.com/senzore/visave/blob/v0.3.1/install.ps1" target="_blank" rel="noopener">Read the installer first</a>.</p>
+<p><code>irm https://raw.githubusercontent.com/senzore/visave/v0.3.1/install.ps1 | iex</code></p>
+<h2>2. Add visave to Firefox</h2>
+<p>This release is an unsigned development build. Open <code>about:debugging#/runtime/this-firefox</code>, click Load Temporary Add-on, and select the visave extension ZIP inside the setup bundle. Temporary installation lasts until Firefox closes; repeat this step after restart. Remove an older temporary Video Lens installation first.</p>
+<p>A permanent, install-and-use release requires Mozilla signing. There is no signed Firefox Add-ons listing yet. <a href="https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/" target="_blank" rel="noopener">About signing</a>.</p>
+<h2>3. Check installation</h2>
+<button id="check-installation" type="button">Check installation</button><p id="installation-status" role="status" aria-live="polite">Checks the Firefox connection, downloader, video tools, and YouTube runtime.</p>
+<h2>4. Choose a save folder</h2>
+<p>Open visave → Settings → Save downloaded files to → Choose folder. Choose once. MP4 and MP3 downloads then save there without save dialogs or automatic File Explorer opening. Click the path to change it, or Clear to restore save dialogs.</p>
+<h2>5. Try a download</h2>
+<p>Open an individual YouTube video or Instagram reel and start playback. Refresh the page after adding the extension. In visave use the Now playing row, choose MP4 or MP3, and press Download. Open the arrow menu for quality and options. Check the saved file plays correctly. Instagram files receive random names.</p>
+<p>Installation ready means the required tools can run. It does not mean every website or video will work. DRM-protected media and active live streams are unavailable. For videos needing login, select Use my Firefox login only if you want the local downloader to read your Firefox cookies for that download. Private-window and container logins are unsupported.</p>
+<h2>Why these components?</h2>
+<dl class="dependencies"><dt><a href="https://www.python.org/" target="_blank" rel="noopener">Python</a></dt><dd>Runs the local download application and yt-dlp. The bundle includes a private runtime rather than changing your system Python.</dd>
+<dt><a href="https://github.com/yt-dlp/yt-dlp" target="_blank" rel="noopener">yt-dlp + EJS</a></dt><dd>Finds media streams on supported websites and handles YouTube's JavaScript challenges.</dd>
+<dt><a href="https://ffmpeg.org/" target="_blank" rel="noopener">FFmpeg + FFprobe</a></dt><dd>Combines video and audio, converts MP3/MP4 when required, and inspects output. Setup downloads the pinned Windows package from the Gyan build project linked by FFmpeg, then checks the package and executable hashes.</dd>
+<dt><a href="https://nodejs.org/" target="_blank" rel="noopener">Node.js</a></dt><dd>Runs the YouTube challenge code through yt-dlp. It does not install a server or run continuously.</dd></dl>
+<h2>Inspect before installing</h2>
+<p>The setup bundle contains readable setup scripts, application source, dependency licenses, a dependency report with download URLs, and SHA-256 hashes. Setup checks every listed bundled file before running the runtime. The build verifies Node and FFmpeg downloads against publisher hashes and Python's executable signature.</p>
+<p>Hashes show that files match the bundle manifest; they do not prove a program is harmless. This development bundle is not code-signed and has not been independently security audited. You can inspect the scripts and scan the extracted folder with Windows Security before running Setup.cmd. No claim of “virus-free” is made.</p>
+<p>Firefox launches the companion when visave needs it. Website access lets visave inspect players while enabled; downloads permission saves files; native messaging connects the local tools. The companion receives the selected URL, download options, and save path. It sends media requests to the selected website and its media hosts. If you select Use my Firefox login, yt-dlp reads the most recently updated Firefox cookie database, which may belong to another profile. It excludes container cookies and sends relevant login cookies with download requests. Visave has no analytics or developer server. <a href="https://github.com/senzore/visave/blob/main/docs/PRIVACY.md" target="_blank" rel="noopener">Read how visave handles data</a>.</p>
+<p>Download only media you own or have permission to save. A working extractor does not grant permission under a website's terms. <a href="https://github.com/senzore/visave/blob/main/docs/FIREFOX-RELEASE.md" target="_blank" rel="noopener">Release rules and website terms</a>.</p>
+<h2>Repair or remove</h2>
+<p>Close active downloads before upgrading. Run Setup.cmd from a new bundle to repair or upgrade, then reload the extension to reconnect. Site support can change; use an updated bundle when yt-dlp needs an update. Uninstall.cmd removes the registered companion and its installed files, preserving your downloaded videos and audio.</p>
+<footer>made by <a class="credit" href="https://github.com/senzore" target="_blank" rel="noopener">senzdev</a></footer>
+</main><script src="guide.js"></script></body></html>

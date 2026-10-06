@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>senzdev | visave</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main>
+    <header class="topline">
+      <div><h1>senzdev | visave</h1><p><span id="site">Current tab</span><span id="count"></span></p></div>
+      <button id="refresh" type="button">Refresh</button>
+    </header>
+    <p id="notice" class="notice" role="status" aria-live="polite">Looking for videos in this tab...</p>
+    <p id="action-status" class="notice error" role="alert" hidden></p>
+    <section id="player" hidden aria-label="Videos on this page">
+      <p id="watching-label" class="current-label" hidden></p>
+      <div id="video" role="list"></div>
+      <details id="other-videos" hidden>
+        <summary id="other-label">Other loaded videos</summary>
+        <div id="other-list" role="list"></div>
+      </details>
+    </section>
+    <section id="panel" class="panel" aria-labelledby="panel-label" hidden>
+      <div class="panel-heading"><h2 id="panel-label">Video details</h2><button id="close-panel" type="button">Close</button></div>
+      <p id="title" class="panel-title"></p>
+      <div id="options-view" hidden>
+        <div class="format-row">
+          <div><label for="output">Format</label><select id="output"><option value="mp4">MP4 video</option><option value="mp3">MP3 audio</option><option value="original">Original file</option></select></div>
+          <div><label for="quality">Maximum height</label><select id="quality"><option value="best">Best available</option><option value="1080">1080p</option><option value="720">720p</option><option value="480">480p</option></select></div>
+        </div>
+        <p id="download-reason" class="hint"></p>
+        <label id="cookie-choice" class="check-row" hidden><input id="cookies" type="checkbox">Use my Firefox login for this download</label>
+        <p id="cookie-note" class="hint" hidden>For this download, yt-dlp reads the most recently updated Firefox cookie database on this computer. It may belong to another Firefox profile. The selected website receives relevant login cookies with download requests. Container cookies are excluded.</p>
+        <p class="hint">Downloads use your saved folder. Choose one in Settings to skip save dialogs.</p>
+        <button id="download" class="primary" type="button">Download MP4</button>
+      </div>
+      <div id="details-view" hidden>
+        <div class="playback-line"><span id="elapsed">0:00</span> / <span id="duration">Unknown</span><span id="playback-state">Waiting for playback</span></div>
+        <progress id="timeline" max="100" value="0" aria-label="Playback position"></progress>
+        <dl class="metrics">
+          <div><dt>Decoded size</dt><dd id="resolution">Unknown</dd></div>
+          <div><dt>Displayed FPS (sampled)</dt><dd id="fps">Waiting</dd></div>
+          <div><dt>Playback speed</dt><dd id="rate">Unknown</dd></div>
+          <div><dt>Buffer ahead</dt><dd id="buffer">Unknown</dd></div>
+          <div><dt>Dropped / total frames</dt><dd id="frames">Unknown</dd></div>
+          <div><dt>Audio level</dt><dd id="volume">Unknown</dd></div>
+          <div><dt>Source</dt><dd id="source-kind">Unknown</dd></div>
+          <div><dt>File size</dt><dd id="size">Not exposed</dd></div>
+        </dl>
+        <p class="hint">Displayed FPS measures frames presented during playback. Your screen, hidden tabs, or browser can limit it.</p>
+        <div class="player-controls"><button id="play-pause" type="button">Play</button><button id="mute" type="button">Mute</button></div>
+        <details class="source-details"><summary>Source details</summary><p id="page-url" tabindex="0"></p><p id="source-url" tabindex="0"></p><p id="seekable" class="hint"></p><p id="network" class="hint"></p></details>
+      </div>
+    </section>
+    <section id="job" class="job" aria-label="Latest download" hidden>
+      <p id="job-status" role="status" aria-live="polite"></p>
+      <progress id="job-progress" max="100" value="0" aria-label="Download progress"></progress>
+      <p id="job-file" class="hint"></p><p id="job-note" class="hint" hidden></p>
+      <div class="job-buttons">
+        <button id="cancel" type="button" hidden>Cancel</button>
+        <button id="show-file" type="button" hidden>Show</button>
+        <button id="dismiss-job" type="button" aria-label="Dismiss download status" title="Dismiss download status">×</button>
+      </div>
+    </section>
+    <footer>
+      <details id="settings">
+        <summary>Settings</summary>
+        <div class="appearance"><label for="theme">Appearance</label><select id="theme"><option value="system">Follow Firefox</option><option value="light">Light</option><option value="dark">Dark</option></select></div>
+        <div class="folder-setting">
+          <span id="folder-label">Save downloaded files to</span>
+          <div class="folder-controls"><button id="choose-folder" type="button" aria-labelledby="folder-label choose-folder" aria-describedby="folder-hint">Choose folder…</button><button id="clear-folder" type="button" hidden>Clear</button></div>
+          <p id="folder-hint" class="hint">Choose once. Future downloads save there without dialogs or File Explorer.</p>
+        </div>
+        <details class="helper-details">
+          <summary>Installation</summary>
+          <p class="hint">Install once to enable supported-site downloads, audio conversion, and saved folders.</p>
+          <p id="helper-status" role="status">Installation has not been checked.</p>
+          <div class="helper-controls"><button id="check-helper" type="button">Check installation</button><a href="../guide.html" id="guide" target="_blank" rel="noopener">Installation process</a></div>
+        </details>
+      </details>
+      <div class="footer-links"><a href="../sites.html" target="_blank" rel="noopener">Supported sites</a><span>made by <a class="credit" href="https://github.com/senzore" target="_blank" rel="noopener">senzdev</a></span></div>
+    </footer>
+  </main>
+  <div id="menu" class="menu" role="menu" aria-label="Video actions" hidden></div>
+  <script src="../src/shared.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+{
+  "manifest_version": 3,
+  "name": "senzdev | visave",
+  "version": "0.3.1",
+  "incognito": "not_allowed",
+  "description": "Video saver: inspect playback, download videos and audio, and choose a save folder.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "video-lens@local",
+      "strict_min_version": "140.0",
+      "data_collection_permissions": {
+        "required": [
+          "browsingActivity",
+          "websiteContent",
+          "websiteActivity"
+        ]
+      }
+    },
+    "gecko_android": {
+      "strict_min_version": "142.0"
+    }
+  },
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "storage",
+    "downloads",
+    "nativeMessaging",
+    "webRequest",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "scripts": [
+      "src/shared.js",
+      "src/background.js"
+    ]
+  },
+  "action": {
+    "default_title": "visave \u2014 video saver",
+    "default_popup": "popup/popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "src/shared.js",
+        "src/content.js"
+      ],
+      "all_frames": true,
+      "match_about_blank": true,
+      "run_at": "document_idle"
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'"
+  }
+}
